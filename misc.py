@@ -1,6 +1,6 @@
 """
 Some functions that are used in the statistics-related functions, but
-are not necessarily related to statistics per say
+are not necessarily related to statistics per say are stashed in here
 """
 
 
@@ -55,7 +55,9 @@ def quicksort(array: list[int | float], ascending: bool = True) \
         -> list[int | float]:
     """
     A helper function to create a copy of the array, and to take away
-    the need to define all the three arguments of the _quicksort function
+    the need to define all the three arguments of the _quicksort function. Also
+    adds the possibility to decide whether to sort in ascending or descending
+    order.
 
     The algorihm is purely implemented by following its Wikipedia article:
     https://en.wikipedia.org/wiki/Quicksort
@@ -91,6 +93,7 @@ def binary_search(nums: list[int | float], value: int | float) -> int:
 
 def clamp(val: int | float, low: int | float, high: int | float) -> int | float:
     """
+    Clamps the given value between the lower and higher limits
     :param val:
     :param low:
     :param high:

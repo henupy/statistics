@@ -1,6 +1,7 @@
 """
 Some common kernel functions are stored here. All the functions can
-be found in
+be found from Wikipedia:
+https://en.wikipedia.org/wiki/Kernel_(statistics)#In_non-parametric_statistics
 """
 
 import math
@@ -11,7 +12,7 @@ def boxcar(_: int | float) -> int | float:
     """
     The function does not really need or use the parameter but the function
     definition must include it so that it's signature matches the other
-    kernel functions signature
+    kernel functions' signature
     :param _:
     :return:
     """
