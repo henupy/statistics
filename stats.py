@@ -44,7 +44,7 @@ def read_csv(fname: str, columns: int | tuple, delim: str = ',') \
     :param fname: Name of the csv-file
     :param columns: The column(s) to read
     :param delim: The character used to split the columns. Can be for
-    example ";" or ",".
+        example ";" or ",".
     :return:
     """
     if not fname.endswith('.csv'):
@@ -139,7 +139,7 @@ def _hist(data: list[int | float], n: int) -> tuple[list, list]:
     basically a histogram. Is also used in plotting of the histogram.
     :param data: List of numbers
     :param n: The amount of bins/intervals to split the data, i.e.,
-    how many bars will the histogram have.
+        how many bars will the histogram have.
     :return:
     """
     intvals = _linspace(start=min(data), end=max(data), n=n)
@@ -171,7 +171,7 @@ def mode(data: list[int | float], n: int = 100) -> list[int | float]:
     essence, the point where the histogram of the data is the highest.
     :param data: List of numerical values
     :param n: Number of intervals to split the divide the data into, in case
-    no 'real' mode is found. Defaults to 100.
+        no 'real' mode is found. Defaults to 100.
     :return:
     """
     # Try to find the "real" mode
@@ -245,19 +245,28 @@ def std(data: list[int | float]) -> int | float:
     return math.sqrt(variance(data=data))
 
 
-def histogram(data: list[int | float], n: int = 20, color: str = 'b',
-              fill: bool = True, alpha: float = 1.) -> None:
+def histogram(data: list[int | float], n: int = 20, norm: bool = True,
+              color: str = 'b', fill: bool = True, alpha: float = 1.,
+              xlabel: str = 'Values', ylabel: str = 'Density') -> None:
     """
     Plots a histogram of the data
     :param data: List of numbers
     :param n: The number of bins/intervals to split the data into
+    :param norm: Whether to normalise the data or not
     :param color: The color of the histogram
     :param fill: Whether to fill the histogram
     :param alpha: The opaqueness of the filled part of the histogram
+    :param xlabel: Label for the x-axis of the plot. Default is 'Value'
+    :param ylabel: Label for the y-axis of the plot. Default is 'Density'
     :return:
     """
     intvals, fracs = _hist(data=data, n=n)
+    if norm:
+        tot = len(data)
+        fracs = [v / tot for v in fracs]
     _, axis = plt.subplots()
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.xlim(intvals[0], intvals[-1])
     y_max = max(fracs) * 1.1
     plt.ylim(0, y_max)
@@ -275,12 +284,12 @@ def histogram(data: list[int | float], n: int = 20, color: str = 'b',
 
 
 def _kde(kernel: Callable, x: int | float, support: list[int | float],
-         h: int | float = None) -> list[int | float]:
+         h: int | float) -> list[int | float]:
     """
     A convenience function used in kernel density estimation
     :param kernel: The kernel function to be used (see kernels.py)
     :param x: The point around which the kernel function's values are
-    calculated
+        calculated
     :param support: A linear support vector of points around the x point
     :param h: Bandwidth
     :return:
@@ -290,37 +299,46 @@ def _kde(kernel: Callable, x: int | float, support: list[int | float],
 
 
 def kde(data: list[int | float], kernel: Callable, h: int | float = None,
-        width: int | float = 20, dx: int | float = 1) -> None:
+        width: int | float = 20, dx: int | float = 1,
+        xlabel: str = 'Values', ylabel: str = 'Density') -> None:
     """
-    Kernel density estimation:
+    Function to perform kernel density estimation. The idea is to try
+    to estimate the (shape of the) probability density function of
+    the given data. More info can be found e.g. from Wikipedia:
     https://en.wikipedia.org/wiki/Kernel_density_estimation
     :param data: List of numbers
     :param kernel: The kernel function to be used in the estimation
-    (see kernels.py)
+        (see kernels.py)
     :param h: Bandwidth
     :param width: The width of the sub-region of the data range
-    in which the kernel function's values are solved
+        in which the kernel function's values are solved
     :param dx: Width of a single step used in the linear support
-    vector
+        vector
+    :param xlabel: Label for the x-axis of the plot. Default is 'Value'
+    :param ylabel: Label for the y-axis of the plot. Default is 'Density'
     :return:
     """
-    if h is None:
-        h = 1.06 * std(data=data) * math.pow(len(data), -.2)
-    div = 1 / (len(data) * h)
-    w2 = width // 2
-    kerns = []
+    # Slight error checking regarding the generation of the support vectors
     if width < dx:
         msg = f'The width of a single step can not be smaller than ' \
               f'the width of the whole region. Now got {width=} < ' \
               f'{dx=}.'
         raise ValueError(msg)
     # Form the kernel function at each data point
+    if h is None:
+        # This correlation for the bandwidth can be found from the wikipedia
+        # article sited above
+        h = 1.06 * std(data=data) * math.pow(len(data), -.2)
     n = int(width // dx)
+    div = 1 / (len(data) * h)
+    w2 = width // 2
+    kerns = []
     for point in data:
         support = _linspace(start=point - w2, end=point + w2, n=n)
         kern = _kde(kernel=kernel, x=point, support=support, h=h)
         kerns.append([support, kern])
-    # Sum the value of each function at each x-position
+    # Sum the value of each function at each x-position that we have
+    # y-values for
     vals = {}
     for xs, ys in kerns:
         for x, y in zip(xs, ys):
@@ -330,20 +348,21 @@ def kde(data: list[int | float], kernel: Callable, h: int | float = None,
                 vals[x] = y
     # Sort the dictionary by x
     vals = sorted(vals.items(), key=lambda p: p[0])
-    # Put the values back in to a dictionary and scale the y-values
+    # Put the values back into a dictionary and scale the y-values
     vals = {k: div * v for k, v in vals}
     # Plot the end result
-    plt.plot(vals.keys(), vals.values())
-    plt.xlabel('Value')
-    plt.ylabel('Density')
+    plt.plot(data, vals)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.grid()
 
 
 def main() -> None:
     prices = read_csv(fname='data/hinta.csv', columns=1, delim=';')
     faithful = read_csv(fname='data/old_faithful.csv', columns=2, delim=',')
-    kde(data=faithful, kernel=kernels.silverman, h=None, width=20, dx=1)
-    histogram(data=prices, alpha=.2)
+    kde(data=faithful, kernel=kernels.silverman, h=None, width=20, dx=1,
+        xlabel='Price [c/kWh]')
+    histogram(data=faithful, norm=True, alpha=.2, xlabel='Price [c/kWh]')
 
     plt.show()
 
