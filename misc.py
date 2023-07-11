@@ -104,3 +104,30 @@ def clamp(val: int | float, low: int | float, high: int | float) -> int | float:
     if val > high:
         return high
     return val
+
+
+def trapezoid(x: list[int | float], y: list[int | float], a: int | float = None,
+              b: int | float = None) -> int | float:
+    """
+    Calculates the definitive integral of the given function by using the
+    trapezoidal rule (https://en.wikipedia.org/wiki/Trapezoidal_rule) using a
+    uniform grid
+    :param x: X values (values where the function was evaluated)
+    :param y: Y values (values of the function at all the x values)
+    :param a: Lower integration limit
+    :param b: Upper integration limit
+    :return:
+    """
+    s, e = 0, len(x)  # Start and end index
+    if a is not None and a > x[0]:
+        s = binary_search(nums=x, value=a)
+    if b is not None and b < x[-1]:
+        e = binary_search(nums=x, value=b)
+    xx = x[s:e]
+    yy = y[s:e]
+    area = 0
+    for i in range(1, len(xx)):
+        x1, x2 = xx[i - 1], xx[i]
+        y1, y2 = yy[i - 1], yy[i]
+        area += (y1 + y2) / 2 * (x2 - x1)
+    return area
