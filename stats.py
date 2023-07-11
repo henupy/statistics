@@ -15,6 +15,7 @@ data can be found from https://sahko.tk/ for example.
 
 import math
 import misc
+import random
 import kernels
 import matplotlib.pyplot as plt
 
@@ -326,8 +327,8 @@ def kde(data: list[int | float], kernel: Callable, h: int | float = None,
         raise ValueError(msg)
     # Form the kernel function at each data point
     if h is None:
-        # This correlation for the bandwidth can be found from the wikipedia
-        # article sited above
+        # This correlation for the bandwidth can be found from the Wikipedia
+        # article mentioned above
         h = 1.06 * std(data=data) * math.pow(len(data), -.2)
     n = int(width // dx)
     div = 1 / (len(data) * h)
@@ -346,25 +347,111 @@ def kde(data: list[int | float], kernel: Callable, h: int | float = None,
                 vals[x] += y
             else:
                 vals[x] = y
+
     # Sort the dictionary by x
     vals = sorted(vals.items(), key=lambda p: p[0])
     # Put the values back into a dictionary and scale the y-values
     vals = {k: div * v for k, v in vals}
     # Plot the end result
-    plt.plot(data, vals)
+    plt.plot(vals.keys(), vals.values())
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.grid()
 
 
-def main() -> None:
-    prices = read_csv(fname='data/hinta.csv', columns=1, delim=';')
-    faithful = read_csv(fname='data/old_faithful.csv', columns=2, delim=',')
-    kde(data=faithful, kernel=kernels.silverman, h=None, width=20, dx=1,
-        xlabel='Price [c/kWh]')
-    histogram(data=faithful, norm=True, alpha=.2, xlabel='Price [c/kWh]')
+def normal_pdf(data: list[int | float]) -> list[list]:
+    """
+    Returns the x and y values of the normal distribution formed from the
+    given data
+    :param data: List of numbers
+    :return:
+    """
+    m = mean(data=data)
+    dev = std(data)
+    data_sort = misc.quicksort(array=data)
+    n = 1 / (dev * math.sqrt(2 * math.pi))
+    vals = [n * math.exp(-.5 * math.pow((x - m) / dev, 2)) for x in data_sort]
+    return [data_sort, vals]
 
-    plt.show()
+
+def normal_cdf(xnorm: list[int | float], ynorm: list[int | float],
+               a: int | float = None, b: int | float = None) -> int | float:
+    """
+    Returns the value of the cumulative distribution at x based
+    :param xnorm:
+    :param ynorm:
+    :param a:
+    :param b:
+    :return:
+    """
+    # Check that the x values are sorted
+    diff = [xnorm[i] - xnorm[i - 1] for i in range(1, len(xnorm))]
+    if any(d < 0 for d in diff):
+        raise ValueError('X values must be strictly increasing')
+    # X and y should be of equal length
+    if len(xnorm) != len(ynorm):
+        msg = f'X and Y arrays must be of same length. Now got {len(xnorm)} ' \
+              f'for x, and {len(ynorm)} for y.'
+        raise ValueError(msg)
+    # Set the integration limits
+    if a is not None and b is not None and a > b:
+        msg = "Lower integration limit can't be smaller than the upper limit."
+        raise ValueError(msg)
+    if b is None:
+        return misc.trapezoid(x=xnorm, y=ynorm, b=a)
+    return misc.trapezoid(x=xnorm, y=ynorm, a=a, b=b)
+
+
+def exp_pdf(x: int | float | list[int | float], lamda: int | float) \
+        -> int | float | list[int | float]:
+    """
+    Probability density function for a exponential distribution of form
+    f(x, lamda) = lamda * exp(-lamda * x)
+    :param x:
+    :param lamda:
+    :return:
+    """
+    if lamda < 0:
+        raise ValueError('The parameter lamda must be positive.')
+    if type(x) in [int, float]:
+        return lamda * math.exp(-lamda * x)
+    return [lamda * math.exp(-lamda * xv) for xv in x]
+
+
+def exp_cdf(x: int | float | list[int | float], lamda: int | float) \
+        -> int | float | list[int | float]:
+    """
+    Cumulative distribution function for a exponential distribution.
+    The cdf is of form F(x, lamda) = 1 - exp(-lamda * x)
+    :param x:
+    :param lamda:
+    :return:
+    """
+    if lamda < 0:
+        raise ValueError('The parameter lamda must be positive.')
+    if type(x) in [int, float]:
+        return 1 - math.exp(-lamda * x)
+    return [1 - math.exp(-lamda * xv) for xv in x]
+
+
+def exp_cdf_inv(y: int | float | list[int | float], lamda: int | float) \
+        -> int | float | list[int | float]:
+    """
+    The inverse function of the cumulative distribution function of an
+    exponential distribution
+    :param y:
+    :param lamda:
+    :return:
+    """
+    if lamda < 0:
+        raise ValueError('The parameter lamda must be positive.')
+    if type(y) in [int, float]:
+        return math.log(1 - y) / -lamda
+    return [math.log(1 - yv) / -lamda for yv in y]
+
+
+def main() -> None:
+    pass
 
 
 if __name__ == '__main__':
