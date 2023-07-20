@@ -17,6 +17,7 @@ import math
 import misc
 import random
 import kernels
+import functools as ft
 import matplotlib.pyplot as plt
 
 from typing import Optional, Callable
@@ -450,8 +451,64 @@ def exp_cdf_inv(y: int | float | list[int | float], lamda: int | float) \
     return [math.log(1 - yv) / -lamda for yv in y]
 
 
+def inversion_sample(cdf_inv: ft.partial, n: int) -> list[int | float]:
+    """
+    Samples n random numbers from the given probability distribution using the
+    inversion method. Expects the distribution function (the inverse of the cdf)
+    to be given as functools.partial function so that some of the parameters are
+    fixed.
+    :param cdf_inv:
+    :param n:
+    :return:
+    """
+    yinv = [random.random() for _ in range(n)]
+    return cdf_inv(y=yinv)
+
+
+def _randrange(a: int | float, b: int | float) -> float:
+    """
+    Return a random number from the range [a, b)
+    :param a:
+    :param b:
+    :return:
+    """
+    return (b - a) * random.random() + a
+
+
+def rejection_sample(x: list[int | float], pdf: ft.partial, n: int) \
+        -> list[int | float]:
+    """
+    Samples n random numbers from the given probability distribution using the
+    rejection method.
+    :param x:
+    :param pdf:
+    :param n:
+    :return:
+    """
+    ylimit = max(pdf(x=x))
+
+    xmin, xmax = min(x), max(x)
+    xvals = []
+    i = 0
+    while i < n:
+        xrand = _randrange(a=xmin, b=xmax)
+        yrand = _randrange(a=0, b=ylimit)
+        ypdf = pdf(x=xrand)
+        if yrand <= ypdf:
+            xvals.append(xrand)
+            i += 1
+
+    return xvals
+
+
 def main() -> None:
-    pass
+    # Some kind of an example of something
+    prices = read_csv(fname='data/hinta.csv', columns=1, delim=';')
+    faith = read_csv(fname='data/old_faithful.csv', columns=2)
+    kde(data=faith, kernel=kernels.gaussian, xlabel='Waittime [some unit]',
+        ylabel='Probability')
+    histogram(data=prices, xlabel='Electricity price [c/kWh]', ylabel='Probability')
+    plt.show()
 
 
 if __name__ == '__main__':
