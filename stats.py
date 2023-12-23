@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 from typing import Optional, Callable
 
 
-def _read_single_column(fname: str, column: int, delim: str = ',') -> list[float]:
+def _read_single_column(fname: str, column: int, delim: str = ",") -> list[float]:
     """
     :param fname: Name of the file
     :param column: Which column to read
@@ -31,7 +31,7 @@ def _read_single_column(fname: str, column: int, delim: str = ',') -> list[float
     :return:
     """
     data = []
-    with open(fname, 'r') as f:
+    with open(fname, "r") as f:
         for line in f.readlines()[1:]:
             line = line.strip().split(delim)
             data.append(float(line[column]))
@@ -39,7 +39,7 @@ def _read_single_column(fname: str, column: int, delim: str = ',') -> list[float
     return data
 
 
-def read_csv(fname: str, columns: int | tuple, delim: str = ',') \
+def read_csv(fname: str, columns: int | tuple, delim: str = ",") \
         -> list[float] | list[list[float]]:
     """
     Reads the data from specifically a csv-file
@@ -49,8 +49,8 @@ def read_csv(fname: str, columns: int | tuple, delim: str = ',') \
         example ";" or ",".
     :return:
     """
-    if not fname.endswith('.csv'):
-        raise ValueError('File must be a csv-file')
+    if not fname.endswith(".csv"):
+        raise ValueError("File must be a csv-file")
     if isinstance(columns, int):
         return _read_single_column(fname=fname, column=columns, delim=delim)
     data = []
@@ -173,7 +173,7 @@ def mode(data: list[int | float], n: int = 100) -> list[int | float]:
     essence, the point where the histogram of the data is the highest.
     :param data: List of numerical values
     :param n: Number of intervals to split the divide the data into, in case
-        no 'real' mode is found. Defaults to 100.
+        no "real" mode is found. Defaults to 100.
     :return:
     """
     # Try to find the "real" mode
@@ -214,7 +214,7 @@ def kth_percentile(data: list[int | float], k: int | float) -> int | float:
     """
     k /= 100
     if not 0 <= k <= 1:
-        msg = 'The value of k must be in the range 0 ... 100 %'
+        msg = "The value of k must be in the range 0 ... 100 %"
         raise ValueError(msg)
     n = len(data)
     data = misc.quicksort(array=data)
@@ -248,8 +248,8 @@ def std(data: list[int | float]) -> int | float:
 
 
 def histogram(data: list[int | float], n: int = 20, norm: bool = True,
-              color: str = 'b', fill: bool = True, alpha: float = 1.,
-              xlabel: str = 'Values', ylabel: str = 'Density') -> None:
+              color: str = "b", fill: bool = True, alpha: float = 1.,
+              xlabel: str = "Values", ylabel: str = "Density") -> None:
     """
     Plots a histogram of the data
     :param data: List of numbers
@@ -258,8 +258,8 @@ def histogram(data: list[int | float], n: int = 20, norm: bool = True,
     :param color: The color of the histogram
     :param fill: Whether to fill the histogram
     :param alpha: The opaqueness of the filled part of the histogram
-    :param xlabel: Label for the x-axis of the plot. Default is 'Value'
-    :param ylabel: Label for the y-axis of the plot. Default is 'Density'
+    :param xlabel: Label for the x-axis of the plot. Default is "Value"
+    :param ylabel: Label for the y-axis of the plot. Default is "Density"
     :return:
     """
     intvals, fracs = _hist(data=data, n=n)
@@ -302,7 +302,7 @@ def _kde(kernel: Callable, x: int | float, support: list[int | float],
 
 def kde(data: list[int | float], kernel: Callable, h: int | float = None,
         width: int | float = 20, dx: int | float = 1,
-        xlabel: str = 'Values', ylabel: str = 'Density') -> None:
+        xlabel: str = "Values", ylabel: str = "Density") -> None:
     """
     Function to perform kernel density estimation. The idea is to try
     to estimate the (shape of the) probability density function of
@@ -316,15 +316,15 @@ def kde(data: list[int | float], kernel: Callable, h: int | float = None,
         in which the kernel function's values are solved
     :param dx: Width of a single step used in the linear support
         vector
-    :param xlabel: Label for the x-axis of the plot. Default is 'Value'
-    :param ylabel: Label for the y-axis of the plot. Default is 'Density'
+    :param xlabel: Label for the x-axis of the plot. Default is "Value"
+    :param ylabel: Label for the y-axis of the plot. Default is "Density"
     :return:
     """
     # Slight error checking regarding the generation of the support vectors
     if width < dx:
-        msg = f'The width of a single step can not be smaller than ' \
-              f'the width of the whole region. Now got {width=} < ' \
-              f'{dx=}.'
+        msg = f"The width of a single step can not be smaller than " \
+              f"the width of the whole region. Now got {width=} < " \
+              f"{dx=}."
         raise ValueError(msg)
     # Form the kernel function at each data point
     if h is None:
@@ -388,11 +388,11 @@ def normal_cdf(xnorm: list[int | float], ynorm: list[int | float],
     # Check that the x values are sorted
     diff = [xnorm[i] - xnorm[i - 1] for i in range(1, len(xnorm))]
     if any(d < 0 for d in diff):
-        raise ValueError('X values must be strictly increasing')
+        raise ValueError("X values must be strictly increasing")
     # X and y should be of equal length
     if len(xnorm) != len(ynorm):
-        msg = f'X and Y arrays must be of same length. Now got {len(xnorm)} ' \
-              f'for x, and {len(ynorm)} for y.'
+        msg = f"X and Y arrays must be of same length. Now got {len(xnorm)} " \
+              f"for x, and {len(ynorm)} for y."
         raise ValueError(msg)
     # Set the integration limits
     if a is not None and b is not None and a > b:
@@ -413,7 +413,7 @@ def exp_pdf(x: int | float | list[int | float], lamda: int | float) \
     :return:
     """
     if lamda < 0:
-        raise ValueError('The parameter lamda must be positive.')
+        raise ValueError("The parameter lamda must be positive.")
     if type(x) in [int, float]:
         return lamda * math.exp(-lamda * x)
     return [lamda * math.exp(-lamda * xv) for xv in x]
@@ -429,7 +429,7 @@ def exp_cdf(x: int | float | list[int | float], lamda: int | float) \
     :return:
     """
     if lamda < 0:
-        raise ValueError('The parameter lamda must be positive.')
+        raise ValueError("The parameter lamda must be positive.")
     if type(x) in [int, float]:
         return 1 - math.exp(-lamda * x)
     return [1 - math.exp(-lamda * xv) for xv in x]
@@ -445,7 +445,7 @@ def exp_cdf_inv(y: int | float | list[int | float], lamda: int | float) \
     :return:
     """
     if lamda < 0:
-        raise ValueError('The parameter lamda must be positive.')
+        raise ValueError("The parameter lamda must be positive.")
     if type(y) in [int, float]:
         return math.log(1 - y) / -lamda
     return [math.log(1 - yv) / -lamda for yv in y]
@@ -486,7 +486,6 @@ def rejection_sample(x: list[int | float], pdf: ft.partial, n: int) \
     :return:
     """
     ylimit = max(pdf(x=x))
-
     xmin, xmax = min(x), max(x)
     xvals = []
     i = 0
@@ -503,13 +502,14 @@ def rejection_sample(x: list[int | float], pdf: ft.partial, n: int) \
 
 def main() -> None:
     # Some kind of an example of something
-    prices = read_csv(fname='data/hinta.csv', columns=1, delim=';')
-    faith = read_csv(fname='data/old_faithful.csv', columns=2)
-    kde(data=faith, kernel=kernels.gaussian, xlabel='Waittime [some unit]',
-        ylabel='Probability')
-    histogram(data=prices, xlabel='Electricity price [c/kWh]', ylabel='Probability')
+    prices = read_csv(fname="data/hinta.csv", columns=1, delim=";")
+    faith = read_csv(fname="data/old_faithful.csv", columns=2)
+    kde(data=faith, kernel=kernels.gaussian, xlabel="Waittime [some unit]",
+        ylabel="Probability")
+    histogram(data=prices, xlabel="Electricity price [c/kWh]",
+              ylabel="Probability")
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
