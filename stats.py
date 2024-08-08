@@ -4,7 +4,7 @@ the mean, median, mode, midrange, percentile, standard deviation, and
 variance. Also some stuff related to distributions.
 
 The idea is to use implement at least the majority of the things without using
-builtin or thirdparty functionality,, hence the implementations are not
+builtin or thirdparty functionality, hence the implementations are not
 efficient or good in any way. This stuff is only useful for learning purposes.
 
 The sample data used is the  the "Old faithful" dataset, which is available
@@ -354,7 +354,7 @@ def kde(data: list[int | float], kernel: Callable, h: int | float = None,
     # Put the values back into a dictionary and scale the y-values
     vals = {k: div * v for k, v in vals}
     # Plot the end result
-    plt.plot(vals.keys(), vals.values())
+    plt.plot(list(vals.keys()), list(vals.values()))
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.grid()
@@ -506,8 +506,7 @@ def main() -> None:
     faith = read_csv(fname="data/old_faithful.csv", columns=2)
     kde(data=faith, kernel=kernels.gaussian, xlabel="Waittime [some unit]",
         ylabel="Probability")
-    histogram(data=prices, xlabel="Electricity price [c/kWh]",
-              ylabel="Probability")
+    histogram(data=prices, xlabel="Electricity price [c/kWh]", ylabel="Probability")
     plt.show()
 
 
